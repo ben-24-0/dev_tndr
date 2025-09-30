@@ -1,27 +1,25 @@
 const express = require("express");
-
 const app = express();
 
-const port = 3000;
+// Multiple options
+app.get(/^\/(cat|dog|bird)$/, (req, res) => res.send("Animal route"));
 
-app.use(express.static("public"));
+app.get("/hello", (req, res) => {
+  res.send("case senstive");
+});
+app.get(/^\/hello$/i, (req, res) => res.send("Hello (case insensitive)"));
 
-app.use("/use/case", (req, res) => {
-  res.send("helloioii");
+// Numbers only
+app.get(/^\/product\/[0-9]+$/, (req, res) => res.send("Product route"));
+// Matches: /product/123 but not /product/abc
+
+app.get(/^\/ab?cd$/, (req, res) => {
+  res.send("matched abcd or acd");
 });
 
-app.use("/use", (req, res) => {
-  res.send("helfaagaghoii");
+app.get(/^\/a(bc)?d$/, (req, res) => {
+  res.send({ firstName: "Akshay", lastName: "SAINI" });
 });
-
-app.use("/hello", (req, res) => {
-  res.send("check");
+app.listen(7777, () => {
+  console.log("listening");
 });
-
-app.use("/", (req, res, next) => {
-  console.log(`method  ${req.method} path ${req.path}`);
-  res.send("hello");
-  // next();
-});
-
-app.listen(port, console.log("listeneing.."));
