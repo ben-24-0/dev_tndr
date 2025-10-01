@@ -2,19 +2,35 @@ const express = require("express");
 const port = 7777;
 const connectDB = require("./config/database");
 require("./config/database");
+const validateSignupData = require("./utils/validation");
+const passHash = require("./utils/passHash");
 const User = require("./models/user");
 const app = express(); // the main app
 
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const data = req.body;
-  // final = await data.json();
-  console.log(data);
-
-  const user = new User(req.body);
-  await user.save();
-  res.send(" saved succesfully");
+  try {
+    const data = req.body;
+    // final = await data.json();
+    validateSignupData(req);
+    const { LastName, FirstName, emailId, password, gender } = data;
+    const hashedPass = await passHash(password);
+    console.log(hashedPass);
+    const user = new User({
+      LastName,
+      FirstName,
+      emailId,
+      password: hashedPass,
+      gender,
+    });
+    await user.save();
+    res.send(" saved succesfully");
+  } catch (error) {
+    res.send({
+      message: "ERROR:" + error,
+    });
+  }
 });
 
 app.get("/user", async (req, res) => {
@@ -55,11 +71,11 @@ app.patch("/user/:userId", async (req, res) => {
   try {
     const userId = req.params?.userId;
     const data = req.body;
-
-    if (body.length === 0) {
-      throw new Error("empty field");
-    }
-    ALLOWED_FIELDS = ["age", "height", "weight", "skills"];
+    console.log(data);
+    // if (data.length === 0) {
+    //   throw new Error("empty field");
+    // }
+    ALLOWED_FIELDS = ["password", "age", "height", "weight", "skills"];
     // Find user(s) by firstname
 
     const isUpdateAllowed = Object.keys(data).every((keys) =>
@@ -69,7 +85,7 @@ app.patch("/user/:userId", async (req, res) => {
     if (!isUpdateAllowed) {
       throw new Error("not updatable");
     }
-    if (data?.skills.length > 10) {
+    if (data?.skills?.length > 10) {
       throw new Error("skill array too long");
     }
     // Update user
