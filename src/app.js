@@ -2,15 +2,14 @@ const express = require("express");
 const port = 7777;
 
 const app = express(); // the main app
+const { adminAuth, userAuth } = require("./middlewares/Auth");
+app.use("/admin", adminAuth);
 
-app.use("/admin", (req, res, next) => {
-  console.log("Admin auth");
-  const token = "xyz";
-  const isAuthorized = token == "xyz";
-  isAuthorized ? next() : res.status(401).send("you are3 bad");
+app.get("/user/login", (req, res) => {
+  res.send("login");
 });
 
-app.get("/user", (req, res, next) => {
+app.use("/user", userAuth, (req, res, next) => {
   res.send("All users ");
 });
 
