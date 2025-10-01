@@ -64,4 +64,21 @@ Express supports the following routing methods corresponding to the HTTP methods
 
     res.status(418).send
 
-    
+     Defining your schema
+
+Everything in Mongoose starts with a Schema. Each schema maps to a MongoDB collection and defines the shape of the documents within that collection
+The permitted SchemaTypes are:
+
+    String
+    Number
+    Date
+    Buffer
+    Boolean
+    Mixed
+    ObjectId
+    Array
+    Decimal128
+    Map
+    UUID
+    Double
+    Int32
