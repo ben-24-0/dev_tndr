@@ -1,12 +1,14 @@
 const express = require("express");
+const cookieparser = require("cookie-parser");
+var jwt = require("jsonwebtoken");
 const port = 7777;
 const connectDB = require("./config/database");
 require("./config/database");
-const validateSignupData = require("./utils/validation");
+const { validateSignupData, ValidateLoginData } = require("./utils/validation");
 const passHash = require("./utils/passHash");
 const User = require("./models/user");
 const app = express(); // the main app
-
+app.use(cookieparser());
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
@@ -33,6 +35,47 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+app.post("/login", async (req, res) => {
+  try {
+    // const { emailId, password } = req.body;
+    const user = await ValidateLoginData(req);
+    if (!user) {
+      throw new Error("invalid credentiels");
+    } else if (user) {
+      //create a jwt token
+
+      var token = jwt.sign({ _id: user._id }, "supersecret");
+
+      //add the token and send as the cookie
+      console.log(token);
+      res.cookie("token", token).send("login succesful");
+    }
+  } catch (error) {
+    res.send({
+      message: "ERROR:" + error,
+    });
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    // const { emailId, password } = req.body;
+
+    const { token } = req.cookies;
+    if (!token) {
+      throw new Error("invalid token");
+    }
+
+    var decoded = jwt.verify(token, "supersecret");
+    console.log(decoded);
+    const profile = await User.findById({ _id: decoded._id });
+    res.send("profile data" + profile);
+  } catch (error) {
+    res.send({
+      message: "ERROR:" + error,
+    });
+  }
+});
 app.get("/user", async (req, res) => {
   const reqEmailId = req.body.emailId;
 
